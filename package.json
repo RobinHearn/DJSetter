@@ -1,0 +1,19 @@
+{
+  "name": "djsetter",
+  "version": "1.0.0",
+  "description": "DJ tool for organising Spotify Playlists",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "DJ",
+    "music",
+    "spotify"
+  ],
+  "author": "Robin Hearn",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
