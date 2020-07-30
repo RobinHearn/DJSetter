@@ -5,119 +5,139 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
 <style>
+  .artwork {
+    height: 50px;
+  }
 
-    .artwork {
-        height : 50px;
-    }
+  div.result {
+    background-color: aquamarine;
+    text-overflow: ellipsis;
+  }
 
-    div.result {
-        background-color: aquamarine;
-        text-overflow: ellipsis;
-    }
-
-    .row {
-        height : 50px;
-    }
+  .row {
+    height: 50px;
+  }
 </style>
 
 <html>
-  <head>
-    <title>DJsetter</title>
-  </head>
-  <body>
-      <div>
-        <h1>DJ Setter</h1>
+
+<head>
+  <title>DJsetter</title>
+</head>
+
+<body>
+  <div>
+    <h1>DJ Setter</h1>
+  </div>
+  <div>
+    <form>
+      <input id="trackID" type="text" placeholder="track id">
+      <button id="getMessage">Submit</button>
+    </form>
+  </div>
+  <div>
+    <button id="userLogin">User Login</button>
+  </div>
+  <div>
+    <button id="testAPI">TestAPI</button>
+  </div>
+  <div class="container" id="searchResults">
+    <div class="row">
+      <div class="col-sm-3">
+        Track title
       </div>
-      <div>
-          <form>
-              <input id="trackID" type="text" placeholder="track id">
-              <button id="getMessage">Submit</button>
-          </form>
+      <div class="col-sm-3">
+        Artist
       </div>
-      <div>
-          <button id="getToken">Get Token</button>
+      <div class="col-sm-3">
+        Album
       </div>
-      <div>
-        <button id="testAPI">TestAPI</button>
+      <div class="col-sm-3">
+        Artwork
       </div>
-      <div class="container" id="searchResults">
-        <div class="row">
-          <div class="col-sm-3">
-            Track title
-          </div>
-          <div class="col-sm-3">
-            Artist
-          </div>
-          <div class="col-sm-3">
-            Album
-          </div>
-          <div class="col-sm-3">
-            Artwork
-          </div>
-        </div>
+    </div>
+  </div>
+  <div class="container" id="selectedTunes">
+    <div class="row">
+      <div class="col-sm-3">
+        Track title
       </div>
-      <div class="container" id="selectedTunes">
-        <div class="row">
-          <div class="col-sm-3">
-            Track title
-          </div>
-          <div class="col-sm-3">
-            Artist
-          </div>
-          <div class="col-sm-3">
-            BPM
-          </div>
-          <div class="col-sm-3">
-            Key
-          </div>
-        </div>
+      <div class="col-sm-3">
+        Artist
       </div>
-  </body>
+      <div class="col-sm-3">
+        BPM
+      </div>
+      <div class="col-sm-3">
+        Key
+      </div>
+    </div>
+  </div>
+</body>
 
-  
-  </script>
 
-  <script>  
-    
-    var client_id = '1838036277ea4e96a566cef9d9603dcd'; 
-    var client_secret = '1838036277ea4e96a566cef9d9603dcd'; 
-    var b64 = 'MTgzODAzNjI3N2VhNGU5NmE1NjZjZWY5ZDk2MDNkY2Q6MTgzODAzNjI3N2VhNGU5NmE1NjZjZWY5ZDk2MDNkY2Q=';
-    var redirect_uri = 'http://localhost/login/'; 
+</script>
 
-    $(document).ready(function(){
+<script>
 
-        var token = window.location.hash.substr(1).split('&')[0].split('=')[1];
-     
-        $("#getToken").click(function(){
-            $("p").text('cliiiiicked');
-            $.ajax({
-                type: 'GET',
-                url: 'https://accounts.spotify.com/authorize',
-                data: {redirect_uri: redirect_uri, client_id : client_id, response_type: 'token'},
-                success: function (textStatus, status) {
-                    console.log(textStatus);
-                    console.log(status);}
-            })
-        });
+  var client_id = '1838036277ea4e96a566cef9d9603dcd';
+  var client_secret = '624e12fd6bd94ab3a402cf50953f4349';
+  var b64 = 'MTgzODAzNjI3N2VhNGU5NmE1NjZjZWY5ZDk2MDNkY2Q6NjI0ZTEyZmQ2YmQ5NGFiM2E0MDJjZjUwOTUzZjQzNDk=';
+  var redirect_uri = 'http://localhost/login/';
+  var token;
 
-        
-        $('#trackID').on('input',function(e){
-            e.preventDefault();
-            let searchTerm = document.getElementById('trackID').value
-            console.log(searchTerm);
-            $.ajax({
-                type: 'GET',
-                url: 'https://api.spotify.com/v1/search',
-                headers: {'Authorization' : 'Bearer ' + token},
-                data: {query : searchTerm, type : 'track', limit : '5'},
-                success: function (data, textStatus) {
+  $(document).ready(function () {
 
-                    $('.result').remove();
-                    var resultData = data;
+    var authCode = window.location.search.slice(1).split('&')[0].split('=')[1]
+    console.log(authCode)
 
-                    for (let i = 0; i < (data.tracks.items).length; i++ ){
+    $.ajax({
+      type: 'POST',
+      url: 'https://accounts.spotify.com/api/token',
+      data: {grant_type : "authorization_code", code : authCode, redirect_uri: 'http://localhost:1234/' },
+      headers:{'Authorization': 'Basic ' + b64 },
+      success: function(data, textStatus){
+        console.log(data);
+        token = data.access_token;
+        console.log(token);
+      },
+      error: function(textStatus, error){
+        console.log(textStatus);
+        console.log(error);
+      }
+      
+    });
 
-                        $(`<div id="${data.tracks.items[i].id}" class="result row">
+    $("#userLogin").click(function () {
+      $.ajax({
+        type: 'GET',
+        url: 'https://accounts.spotify.com/authorize',
+        data: { redirect_uri: redirect_uri, client_id: client_id, response_type: 'token' },
+        success: function (textStatus, status) {
+          console.log(textStatus);
+          console.log(status);
+        }
+      })
+    });
+
+
+    $('#trackID').on('input', function (e) {
+      e.preventDefault();
+      let searchTerm = document.getElementById('trackID').value
+      console.log(searchTerm);
+      $.ajax({
+        type: 'GET',
+        url: 'https://api.spotify.com/v1/search',
+        headers: { 'Authorization': 'Bearer ' + token },
+        data: { query: searchTerm, type: 'track', limit: '5' },
+        success: function (data, textStatus) {
+
+          $('.result').remove();
+          var resultData = data;
+
+          for (let i = 0; i < (data.tracks.items).length; i++) {
+
+            $(`<div id="${data.tracks.items[i].id}" class="result row">
                         <div id="track${data.tracks.items[i].id}"class="col-sm-3">
                          ${data.tracks.items[i].name}
                         </div>
@@ -131,30 +151,30 @@
                             <img id="${data.tracks.items[i].id}" class="artwork" src="${data.tracks.items[i].album.images[0].url}" alt="artwork">
                         </div>
                         </div>`)
-                        .appendTo('#searchResults');
-                    }
-                }
-            })
-        });
+              .appendTo('#searchResults');
+          }
+        }
+      })
+    });
 
-        $(document).on('click','div.result',function(e) {
-            e.preventDefault();
-            var songID = ($(this).attr('id'));
-            $.ajax({
-                type: 'GET',
-                url: `https://api.spotify.com/v1/audio-features/${songID}`,
-                headers: {'Authorization' : 'Bearer ' + token},
-                success: function(data, textStatus) {
-                    var songData = data;
-                    console.log(data);
+    $(document).on('click', 'div.result', function (e) {
+      e.preventDefault();
+      var songID = ($(this).attr('id'));
+      $.ajax({
+        type: 'GET',
+        url: `https://api.spotify.com/v1/audio-features/${songID}`,
+        headers: { 'Authorization': 'Bearer ' + token },
+        success: function (data, textStatus) {
+          var songData = data;
+          console.log(data);
 
-                    if (document.getElementById('selection' + data.id)) {
-                      console.log('Entry Already exists!')
-                    }
-                    else {
-                      var selectedData = data;
-                
-                      $(`<div id ="selection${data.id}"class="selection row">
+          if (document.getElementById('selection' + data.id)) {
+            console.log('Entry Already exists!')
+          }
+          else {
+            var selectedData = data;
+
+            $(`<div id ="selection${data.id}"class="selection row">
                           <div class="col-sm-3">
                             ${$(`#track${data.id}`).text()}
                           </div>
@@ -169,17 +189,14 @@
                           </div>
                           </div>`).appendTo('#selectedTunes')
 
-                    }
-                    
-                }
+          }
 
-            })
-        });
+        }
+
+      })
     });
-    
-  </script>
+  });
+
+</script>
 
 </html>
-
-
-
